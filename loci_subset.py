@@ -25,6 +25,8 @@ for line in loci:
 loci.close()
 pro_loci.close()
 nonpro_loci.close()
+
+
             
 		
 
