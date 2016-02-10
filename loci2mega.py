@@ -16,19 +16,19 @@ from os.path import isfile, join
 
 #functions
 
-def Loci2Mega(infileName,outfileName,genesFil,taxaFil):
+def Loci2Mega(infileName,outfileName,genes,genesFil,taxaFil):
     numLoci = 1
     thisName = []
-    prot_ids = open(genesFil, "r")
     pidsList = []
     taxaList = open(taxaFil, "r")
     tList = []
     finalOut = open("{0}{1}".format(outfileName,".meg"), "w")
     locitemp = open("locitemp.meg", "w")
-
-    for p in prot_ids:
-        pidsList.append(p.strip())
-    prot_ids.close()
+    if genes == "both":
+        prot_ids = open(genesFil, "r")
+        for p in prot_ids:
+            pidsList.append(p.strip())
+        prot_ids.close()
 
     for t in taxaList:
         tList.append(t.strip())
@@ -48,7 +48,12 @@ def Loci2Mega(infileName,outfileName,genesFil,taxaFil):
                 locitemp.close()
                 locitemp = open("locitemp.meg", "r")
                 locid = line.strip().split('|')[1]
-                if locid in pidsList:
+                if genes == "both":
+                    if locid in pidsList:
+                        prop = "Coding"
+                    else:
+                        prop = "Noncoding"
+                elif genes == "coding":
                     prop = "Coding"
                 else:
                     prop = "Noncoding"
@@ -61,7 +66,7 @@ def Loci2Mega(infileName,outfileName,genesFil,taxaFil):
                 if len(missing) != 0:
                     Nstring = "?"*numChar
                     for n in missing:
-                        finalOut.write("#"+n+'    '+Nstring+"\n")
+                        finalOut.write("#"+n+"_{species."+n.split("_")[2]+"}    "+Nstring+"\n")
                 locitemp = open("locitemp.meg","w")
                 numLoci+=1
                 thisName = []
@@ -70,7 +75,7 @@ def Loci2Mega(infileName,outfileName,genesFil,taxaFil):
                 name = newline.split()
                 seqed = name[1].replace("N","?")
                 thisName.append(name[0])
-                locitemp.write("#"+name[0]+"    "+seqed+"\n")
+                locitemp.write("#"+name[0]+"_{species."+name[0].split("_")[2]+"}    "+seqed+"\n")
                 numChar = len(seqed)
 
     os.remove("locitemp.meg")
@@ -81,9 +86,10 @@ def main(argv):
     #get arguments from command line
     infile_name = argv[1]
     outfile_name = argv[2]
-    genes_file = argv[3]
-    taxa_file = argv[4]
-    Loci2Mega(infile_name,outfile_name,genes_file,taxa_file)
+    genes = argv[3]
+    genes_file=argv[4]
+    taxa_file = argv[5]
+    Loci2Mega(infile_name,outfile_name,genes,genes_file,taxa_file)
 
 if __name__ == "__main__":
     status = main(sys.argv)
