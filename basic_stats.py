@@ -125,7 +125,28 @@ def main(argv):
         for p in widict.keys():
             print p+'\nAvg proportion of differences: '+ str(widict[p][0])+'\nMean # of nucleotides per comparision: '\
             + str(widict[p][1]) + '\nStd in # of nucleotides: '+ str(widict[p][2])
-    if method 
+    elif method == "nucratio":
+        namedict = buildNameDict(inputfile)
+        for ind in namedict.keys():
+            a = 0
+            g = 0
+            c =0
+            t = 0
+            seqlen = 0
+            locids = namedict[ind].keys()
+            for lid in locids:
+                indseq = namedict[ind][lid]
+                if indseq != None:
+                    naset = set().union(set(findOcc(indseq,"N")), set(findOcc(indseq,"-")))
+                    indseq_e = "".join([char for idx, char in enumerate(indseq) if idx not in naset ])
+                    agct = nucratio(indseq_e)
+                    a += agct[0]
+                    g += agct[1]
+                    c += agct[2]
+                    t += agct[3]
+                    seqlen += len(indseq_e)
+            print ind + " A: "+str(float(a)/float(seqlen))+" G: "+ str(float(g)/float(seqlen))+" C: "+str(float(c)/float(seqlen))\
+            +" T: "+str(float(t)/float(seqlen))
 
 if __name__ == "__main__":
    main(sys.argv[1:])
