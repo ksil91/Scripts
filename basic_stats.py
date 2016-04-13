@@ -104,11 +104,11 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:p:m:",["ifile=","ofile=","pfile=","m="])
     except getopt.GetoptError:
-        print 'basic_stats.py -i <inputfile> -o <outputfile> -p <popfile> -m <within, nucratio>'
+        print 'basic_stats.py -i <inputfile> -o <outputfile> -p <popfile> -m <within, nucratio, coverage>'
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print 'basic_stats.py -i <inputfile> -o <outputfile> -p <popfile> -m <within, nucratio>'
+            print 'basic_stats.py -i <inputfile> -o <outputfile> -p <popfile> -m <within, nucratio, coverage>'
             sys.exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
@@ -147,6 +147,38 @@ def main(argv):
                     seqlen += len(indseq_e)
             print ind + " A: "+str(float(a)/float(seqlen))+" G: "+ str(float(g)/float(seqlen))+" C: "+str(float(c)/float(seqlen))\
             +" T: "+str(float(t)/float(seqlen))
+    elif method == "coverage":
+        INFILE = open(inputfile, "r")
+        species_name = {}
+        species2 = {}
+        spec_set = set()
+        loc_tot = 0
+        for line in INFILE:
+            if "//" not in line:
+                name = line.split()
+                if name[0] not in species_name.keys():
+                    species_name[name[0]] = 1
+                else:
+                    species_name[name[0]] += 1
+                spec_set.add(name[0].split("_")[2])
+            else:
+                loc_tot += 1
+                for ss in spec_set:
+                    if ss not in species2.keys():
+                        species2[ss] = 1
+                    else:
+                        species2[ss] +=1
+                spec_set = set()
+
+        for spec in species_name.keys():
+            prop = float(species_name[spec])/float(loc_tot)
+            print spec+": "+str(prop)
+        for s in species2.keys():
+            prop = float(species2[s])/float(loc_tot)
+            print s+": "+str(prop)
+        print "Total loci: "+str(loc_tot)
+        INFILE.close()
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
