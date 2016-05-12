@@ -1,9 +1,8 @@
 __author__ = 'ksil91'
 
-__author__ = 'ksil91'
-
 
 import sys
+import numpy
 
 def unstruct(amb):
     amb = amb.upper()
@@ -32,23 +31,6 @@ def getLength(gphocs):
             lenList.append(int(sqlen))
     gFile.close()
     return lenList
-
-def unstruct(amb):
-    amb = amb.upper()
-    " returns bases from ambiguity code"
-    D = {"R":["G","A"],
-         "K":["G","T"],
-         "S":["G","C"],
-         "Y":["T","C"],
-         "W":["T","A"],
-         "M":["C","A"],
-         "A":["A","A"],
-         "T":["T","T"],
-         "G":["G","G"],
-         "C":["C","C"],
-         "N":["N","N"],
-         "-":["-","-"]}
-    return D.get(amb)
 
 
 def findOcc(s,ch):
@@ -113,7 +95,8 @@ def getPi(lD,sDlist,outfile):
     sDB = sDlist[1]
     out = open(outfile, "w")
     names = sDA.keys()
-    pi_list = []
+    pi_alllist = []
+    pi_nozeros = []
     for snp in range(0,len(sDA[names[0]])):
         if sDA[names[0]][snp] != "_":
             snplen = len(sDA[names[0]][snp])
@@ -146,16 +129,28 @@ def getPi(lD,sDlist,outfile):
                 else:
                     missingsamp += 1
             if missingsamp == len(names):
-                pi = "NaN"
+                out.write("NaN\n")
             else:
                 numseq = float(2*(len(names)-missingsamp))
                 #print(numseq)
                 #print(snpcomp)
                 pi = (1.0/(numseq**2))*snpcomp
-            out.write(str(pi)+"\n")
-            pi_list.append(pi)
+                pi_alllist.append(float(pi))
+                out.write(str(pi)+"\n")
+                if pi != 0.0:
+                    pi_nozeros.append(float(pi))
+        else:
+            out.write("_\n")
+            pi_alllist.append(0.0)
+
     out.close()
-    return pi_list
+    pi_all_array = numpy.array(pi_alllist)
+    pi_nz_array = numpy.array(pi_nozeros)
+    pi_all_mean = numpy.mean(pi_all_array)
+    pi_nz_mean = numpy.mean(pi_nz_array)
+    print("Pi all: "+str(len(pi_alllist))+", "+str(pi_all_mean))
+    print("Pi no zeros: "+str(len(pi_nozeros))+", "+str(pi_nz_mean))
+    return pi_all_array
 
 
 def main(argv):
