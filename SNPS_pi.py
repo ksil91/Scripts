@@ -25,13 +25,21 @@ def unstruct(amb):
 def getLength(gphocs):
     gFile = open(gphocs,"r")
     lenList = []
+    locinum = 0
+    specs = ["col","est","form","ist","pan","mal"]
+    numloci = int(gFile.readline())
+    specD = {"col": [False]*numloci,"est": [False]*numloci,"form": [False]*numloci,"ist": [False]*numloci,"pan": [False]*numloci,"mal": [False]*numloci} 
     for line in gFile:
         if "locus" in line:
             sqlen = line.strip().split()[2]
             lenList.append(int(sqlen))
+            locinum += 1
+        elif len(line) > 2:
+            name = line.split()[0].split("_")[2]
+            specD[name][locinum-1] = True
+         
     gFile.close()
-    return lenList
-
+    return (lenList,specD)
 
 def findOcc(s,ch):
     return [i for i, letter in enumerate(s) if letter == ch]
@@ -48,7 +56,7 @@ def hamdist(str1, str2):
     return [float(diffs),len(news1)]
 
 
-def getSNPs(snps,samples):
+def getSNPs(snps,samples,covDict):
     sFile = open(snps, "r")
     samps = open(samples,"r")
     sampList = []
@@ -64,11 +72,11 @@ def getSNPs(snps,samples):
             if s[0] in sampList:
                 sDictA[s[0]] = []
                 sDictB[s[0]] = []
-                for snps in s[1:]:
-                    if any((c in list("ATGCRKYSWM")) for c in snps):
+                for snps in range(1,len(s)):
+                    if any((c in list("ATGCRKYSWM")) for c in s[snps]):
                         snpA = ""
                         snpB = ""
-                        for snp in snps:
+                        for snp in s[snps]:
                             if snp in list("RKYSWM"):
                                 het = unstruct(snp)
                                 snpA += het[0]
@@ -78,12 +86,17 @@ def getSNPs(snps,samples):
                                 snpB += snp
                         sDictA[s[0]].append(snpA)
                         sDictB[s[0]].append(snpB)
-                    elif "_" not in snps:
+                    elif "_" not in s[snps]:
                         sDictA[s[0]].append("none")
                         sDictB[s[0]].append("none")
                     else:
-                        sDictA[s[0]].append("_")
-                        sDictB[s[0]].append("_")
+                        spec = s[0].split("_")[2]
+                        if covDict[spec][snps]:                            
+                            sDictA[s[0]].append("_")
+                            sDictB[s[0]].append("_")
+                        else:
+                            sDictA[s[0]].append("none")
+                            sDictB[s[0]].append("none")
 
     sFile.close()
     sDlist.append(sDictA)
@@ -159,8 +172,8 @@ def main(argv):
     snpfile = argv[2]
     output = argv[3]
     samplelist = argv[4]
-    lD = getLength(gphocs)
-    sDL = getSNPs(snpfile,samplelist)
+    lD, cDict = getLength(gphocs)
+    sDL = getSNPs(snpfile,samplelist,cDict)
     pis = getPi(lD,sDL,output)
 
 if __name__ == "__main__":

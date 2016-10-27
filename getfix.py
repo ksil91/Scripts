@@ -4,6 +4,60 @@ __author__ = 'ksil91'
 import sys
 import numpy
 
+def getLength(gphocs):
+    gFile = open(gphocs,"r")
+    locinum = 0
+    specs = set()
+    specD = {"colest": 0,"formpan": 0,"istmal": 0,"colmal":0,"colform":0,"colpan": 0,"colist":0,"estmal":0,"estform": 0,\
+    "estpan": 0, "estist":0,"formist":0,"formmal": 0,"panist":0,"panmal":0} 
+    gFile.next()
+    sq = gFile.next()
+    sqlen = int(sq.strip().split()[2])
+    totseqlen = 0
+    for line in gFile:
+        if "locus" in line:
+            if "col" in specs and "est" in specs:
+                specD["colest"] += sqlen
+            if "form" in specs and "pan" in specs:
+                specD["formpan"] += sqlen
+            if "ist" in specs and "mal" in specs:
+                specD["istmal"] += sqlen
+            if "col" in specs and "mal" in specs:
+                specD["colmal"] += sqlen
+            if "col" in specs and "form" in specs:
+                specD["colform"] += sqlen
+            if "col" in specs and "pan" in specs:
+                specD["colpan"] += sqlen
+            if "col" in specs and "ist" in specs:
+                specD["colist"] += sqlen
+            if "est" in specs and "mal" in specs:
+                specD["estmal"] += sqlen
+            if "est" in specs and "form" in specs:
+                specD["estform"] += sqlen
+            if "est" in specs and "pan" in specs:
+                specD["estpan"] += sqlen
+            if "est" in specs and "ist" in specs:
+                specD["estist"] += sqlen
+            if "form" in specs and "ist" in specs:
+                specD["formist"] += sqlen
+            if "form" in specs and "mal" in specs:
+                specD["formmal"] += sqlen
+            if "pan" in specs and "mal" in specs:
+                specD["panmal"] += sqlen
+            if "pan" in specs and "ist" in specs:
+                specD["panist"] += sqlen                      
+            totseqlen += sqlen            
+            sqlen = int(line.strip().split()[2])
+            specs = set()
+        elif len(line) > 2:
+            name = line.split()[0].split("_")[2]
+            specs.add(name)
+    gFile.close()    
+    print specD
+    print "Total nucs: "+str(totseqlen)
+
+
+
 def getFix(snps,samples1,samples2):
     sFile = open(snps, "r")
     samps1 = open(samples1,"r")
@@ -78,9 +132,12 @@ def getFix(snps,samples1,samples2):
 def main(argv):
     #get arguments from command line
     snpfile = argv[1]
-    samplelist1 = argv[2]
-    samplelist2 = argv[3]
+    gfile = argv[2]
+    samplelist1 = argv[3]
+    samplelist2 = argv[4]
     getFix(snpfile,samplelist1,samplelist2)
+    getLength(gfile)
+
 
 if __name__ == "__main__":
     status = main(sys.argv)
