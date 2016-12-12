@@ -37,15 +37,21 @@ makeGenoMatrix <- function(genofile, indfile){
 ##THIS MODULE CALCULATES PI (NUCLEOTIDE DIVERSITY) FOR EACH LOCUS AND WRITES TO A FILE
 ## Note that this is pi when considering individuals from just 2 populations. Will need to adapt to get pi from 
 ## entire dataset.
-getPi <- function(geno_matrix, suf,mincov){
+getPi <- function(geno_matrix, suf,mincov,test_sub){
     pi = {}
     L <- ncol(geno_matrix)
     S <- nrow(geno_matrix)
+    geno_cover_p1 = vector(mode = "numeric", length = length(test_sub))
+    geno_cover_p2 = vector(mode = "numeric", length = L - length(test_sub))
+    for (i in 1:L){
+        geno_cover_p1[i] = sum(!is.na(geno_matrix[test_sub,i]))
+        geno_cover_p2[i] = sum(!is.na(geno_matrix[-test_sub,i]))
+    }
     for (i in 1:L){
         locus = {}
         locus = geno_matrix[,i]
         locus = locus[!is.na(locus)]
-        if(length(locus) >= S*mincov){
+        if(geno_cover_p1[i] >= 2 && geno_cover_p2[i] >= 2 && length(locus) >= S*mincov){
             locus_sum = 0
             for (j in 2:length(locus)){
                 jcount = j - 1
@@ -214,22 +220,13 @@ for(i in seq(1,length(popcombos), by = 2)){
     geno_matrix = glist[[1]]
     test_sub = glist[[2]]
     null_sub = glist[[3]]
-    meanPi = getPi(geno_matrix,popsuf,mincov)
+    meanPi = getPi(geno_matrix,popsuf,mincov,test_sub)
     meanFST = getCoverFst(geno_matrix, popsuf,test_sub, null_sub,mincov)
     fst.df[rownames(fst.df)==popcombos[i],popcombos[i+1]] <- meanFST
     pi.df[rownames(pi.df)==popcombos[i],popcombos[i+1]] <- meanPi
     getHW(geno_matrix,popsuf,mincov)
 }
 print("done")
-
-
-
-
-
-
-
-
-
 
 
 ## Read in .geno file
