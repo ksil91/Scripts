@@ -15,7 +15,7 @@ def getPopList(popfile):
     pop.close()
     return(poplist,samplelist)
 
-def makeNewGeno(suf,pop12,poplist,samplelist):
+def makeNewGenoPair(suf,pop12,poplist,samplelist):
     IN = open(suf+".geno","r")
     OUT = open(suf+"_"+pop12[0]+"_"+pop12[1]+".geno","w")
     indfile = open(suf+"_"+pop12[0]+"_"+pop12[1]+".ind","w")
@@ -34,6 +34,23 @@ def makeNewGeno(suf,pop12,poplist,samplelist):
     OUT.close()
     indfile.close()
 
+def makeNewGenoSingle(suf,pop,poplist,samplelist):
+    IN = open(suf+".geno","r")
+    OUT = open(suf+"_"+pop+".geno","w")
+    indfile = open(suf+"_"+pop+".ind","w")
+    for line in IN:
+        genos = list(line.strip())
+        for i in range(0,len(genos)):
+            if poplist[i] == pop:
+                OUT.write(genos[i])
+        OUT.write("\n")
+    for i in range(0,len(samplelist)):
+        if poplist[i] == pop:
+            indfile.write(samplelist[i]+"    0\n")
+    IN.close()
+    OUT.close()
+    indfile.close()
+
 
 def main(argv):
     #get arguments from command line
@@ -41,8 +58,10 @@ def main(argv):
     popfile = argv[2]
     poplist,samplelist = getPopList(popfile)
     popset = set(poplist)
-    for c in combinations(popset,2):
-        makeNewGeno(suf,c,poplist,samplelist)
+    #for c in combinations(popset,2):
+        #makeNewGeno(suf,c,poplist,samplelist)
+    for s in popset:
+        makeNewGenoSingle(suf,s,poplist,samplelist)
     
 
 if __name__ == "__main__":
