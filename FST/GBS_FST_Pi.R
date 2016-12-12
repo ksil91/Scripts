@@ -58,7 +58,7 @@ getPi <- function(geno_matrix, suf,mincov){
             pi[i] = locus_sum}
         else{pi[i] = NA}
     }
-    write(pi,file=paste(suf,"pi",sep="."),ncol = 1)
+    write(pi,file=paste(suf,as.character(mincov),"pi",sep="."),ncol = 1)
     meanPi = mean(pi, na.rm = TRUE)
     return(meanPi)
 }
@@ -72,7 +72,17 @@ getCoverFst <- function(geno_matrix, suf,test_sub,null_sub,mincov){
     geno_cover = vector(mode = "numeric", length = L)
     geno_cover_p1 = vector(mode = "numeric", length = length(test_sub))
     geno_cover_p2 = vector(mode = "numeric", length = L - length(test_sub))
-    ##THIS MODULE CALCULATES major allele frequency (AF) FOR EACH LOCUS
+    
+    for (i in 1:L){
+        geno_means[i] = mean(geno_matrix[,i],na.rm=TRUE)/2
+    }
+    for (i in 1:L){
+        geno_cover[i] = sum(!is.na(geno_matrix[,i]))
+        geno_cover_p1[i] = sum(!is.na(geno_matrix[test_sub,i]))
+        geno_cover_p2[i] = sum(!is.na(geno_matrix[-test_sub,i]))
+    }
+    
+    #THIS MODULE CALCULATES major allele frequency (AF) FOR EACH LOCUS
     af = {}
     for (i in 1:L){
         L_maf = sum(!is.na(geno_matrix[,i]))
@@ -93,24 +103,16 @@ getCoverFst <- function(geno_matrix, suf,test_sub,null_sub,mincov){
         else{ maf[i] = NA}
     }
     #WRITE MAF and AF TO FILE
-    write(maf,file=paste(suf,"maf",sep="."), ncolumns=1)
-    write(af, file=paste(suf,"af",sep="."), ncolumns=1)
+    write(maf,file=paste(suf,as.character(mincov),"maf",sep="."), ncolumns=1)
+    write(af, file=paste(suf,as.character(mincov),"af",sep="."), ncolumns=1)
     #NUMBER OF INDIVIDUALS WITH SNP (FOR REMOVING SINGLETONS)
     allele_class = {}
     for (i in 1:L){
         if(!is.na(maf[i])){
             allele_class[i] = maf[i]*geno_cover[i]}
         else{ allele_class[i] = NA} }
-    write(allele_class,file=paste(suf,"AC",sep="."),ncolumns=1)
+    write(allele_class,file=paste(suf,as.character(mincov),"AC",sep="."),ncolumns=1)
     # FST calculation
-    for (i in 1:L){
-        geno_means[i] = mean(geno_matrix[,i],na.rm=TRUE)/2
-    }
-    for (i in 1:L){
-        geno_cover[i] = sum(!is.na(geno_matrix[,i]))
-        geno_cover_p1[i] = sum(!is.na(geno_matrix[test_sub,i]))
-        geno_cover_p2[i] = sum(!is.na(geno_matrix[-test_sub,i]))
-    }
     #Use test_sub to look at Fst values
     pop_1 = {}
     pop_2 = {}
@@ -132,8 +134,8 @@ getCoverFst <- function(geno_matrix, suf,test_sub,null_sub,mincov){
     FST = abs(FST)
     meanFST = mean(FST, na.rm = TRUE)
     ##WRITE FST TO FILE
-    write(FST,file=paste(suf,"fst",sep="."),ncolumns=1)
-    write(geno_cover,file=paste(suf,"genocover",sep="."),ncolumns=1)
+    write(FST,file=paste(suf,as.character(mincov),"fst",sep="."),ncolumns=1)
+    write(geno_cover,file=paste(suf,as.character(mincov),"genocover",sep="."),ncolumns=1)
     
     #NULL FST
     geno_cover_p1_N = vector(mode = "numeric", length = length(null_sub))
@@ -161,12 +163,12 @@ getCoverFst <- function(geno_matrix, suf,test_sub,null_sub,mincov){
         else{ FST_N[i] = NA}
         FST_N = abs(FST_N)}
     #WRITE FST NULL TO FILE
-    write(FST_N,file=paste(suf,"null_fst",sep="."),ncolumns=1)
+    write(FST_N,file=paste(suf,as.character(mincov),"null_fst",sep="."),ncolumns=1)
     return(meanFST)
 }
 ##THIS MODULE CALCULATES H-W EQUILIBRIUM FOR EACH LOCUS
 getHW <- function(geno_matrix, suf,mincov){
-    af.table <- read.table(file=paste(suf,"af",sep="."), header=FALSE)
+    af.table <- read.table(file=paste(suf,as.character(mincov),"af",sep="."), header=FALSE)
     af <- as.numeric(af.table$V1)
     HW_chi = {}
     L <- ncol(geno_matrix)
@@ -187,11 +189,11 @@ getHW <- function(geno_matrix, suf,mincov){
         else{HW_chi = NA}
     }
     #WRITE HARDY-WEINBERG CHI-SQUARED STAT (CAN DERIVE p-values FROM THIS)
-    write(HW_chi,file=paste(suf,"HW",sep="."),ncolumns=1)
+    write(HW_chi,file=paste(suf,as.character(mincov),"HW",sep="."),ncolumns=1)
 }
 
 ##Code to iterate through all pairs of populations in a given pop file 
-##to calculate pi and fst for each locus. Outputs to ".pi" and ".fst" files
+##to calculate pi and fst for each locus. Outputs to ".pi" and ".fst" files. Use splitGenoPops.py.
 poptable <- read.table("../../Pop2Int.txt", header = FALSE)
 pops <- unique(as.vector(poptable$V3))
 suf <- "over10k-min75H32u"
