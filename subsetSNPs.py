@@ -1,3 +1,4 @@
+__author__ = 'Katherine Silliman'
 ## Code to subset one SNP per GBS locus from a VCF file. Chooses the SNP
 ## with the highest sample coverage. If there is a tie, chooses the 1st SNP in the loci. (may change to random)
 ## May be specific to VCF format output from ipyrad.
