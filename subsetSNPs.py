@@ -1,4 +1,5 @@
 __author__ = 'Katherine Silliman'
+
 ## Code to subset one SNP per GBS locus from a VCF file. Chooses the SNP
 ## with the highest sample coverage. If there is a tie, chooses the 1st SNP in the loci. (may change to random)
 ## May be specific to VCF format output from ipyrad.
@@ -15,7 +16,10 @@ def subsetSNPs(inputfile,outputfile):
     for line in IN:
         if "#" not in line:
             linelist = line.split()
-            loci = int(linelist[0])
+            if "loc" in linelist[0]:
+                loci = linelist[0]
+            else:
+                loci = int(linelist[0])
             #Column 8 is INFO column of VCF file
             NS = float(linelist[7].split(";")[0].split("=")[1])
             if loci not in locidict.keys():
